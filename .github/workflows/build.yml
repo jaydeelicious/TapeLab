@@ -1,0 +1,52 @@
+name: TapeLab CI
+
+on: 
+  push:
+    branches:
+      - main
+      - feature/project-foundation
+   
+  pull_request:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Windows x64 - Build and Test
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Verify development tools
+        run: |
+          cmake --version
+          git --version
+
+      - name: Configure CMake
+        run: >
+          cmake -S . -B build
+          -G "Visual Studio 17 2022"
+          -A x64
+          -DBUILD_TESTING=ON
+
+      - name: Build VST3 and tests
+        run: >
+          cmake --build build
+          --config Release
+          --target TapeLab_VST3 TapeLabTests
+          --parallel 2
+
+      - name: Run automated tests
+        run: >
+          ctest --test-dir build
+          -C Release
+          --output-on-failure
