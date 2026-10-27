@@ -1,6 +1,7 @@
 
 add_executable(TapeLabTests
     SmokeTests.cpp
+    TapeSaturationTests.cpp
 )
 
 target_compile_features(TapeLabTests
@@ -10,6 +11,7 @@ target_compile_features(TapeLabTests
 
 target_link_libraries(TapeLabTests
     PRIVATE
+        TapeLabDSP
         Catch2::Catch2WithMain
 )
 
