@@ -131,3 +131,19 @@ The MVP will expose four host-automatable parameters:
 | Output Gain | Final level adjustment |
 
 JUCE's `AudioProcessorValueTreeState` is the planned mechanism for parameter storage, UI attachments, and host state integration.
+
+### Initial Saturation Model
+
+TapeLab's first saturation algorithm uses hyperbolic tangent waveshaping:
+
+\[
+y[n] = \tanh(g \cdot x[n])
+\]
+
+where \(g = 10^{D_{\mathrm{dB}}/20}\) and Drive ranges from 0 to 24 dB.
+
+The algorithm produces smooth soft clipping and introduces predominantly odd-order harmonic distortion for zero-centered sinusoidal signals.
+
+The implementation will use standalone C++20 DSP code, independent of JUCE.
+
+**Limitations:** The initial model does not include oversampling, hysteresis, frequency-dependent saturation, or automatic output gain compensation. It is a tape-inspired waveshaper rather than a physical tape simulation.
