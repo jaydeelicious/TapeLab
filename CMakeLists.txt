@@ -12,6 +12,22 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 # Include the pinned JUCE dependency
 add_subdirectory(external/JUCE)
 
+# Standalone DSP library
+add_library(TapeLabDSP STATIC
+    src/dsp/TapeSaturation.cpp
+    src/dsp/TapeSaturation.h
+)
+
+target_compile_features(TapeLabDSP
+    PUBLIC
+        cxx_std_20
+)
+
+target_include_directories(TapeLabDSP
+    PUBLIC
+        "${CMAKE_CURRENT_SOURCE_DIR}/src"
+)
+
 # VST3 audio effect plugin
 juce_add_plugin(TapeLab
     COMPANY_NAME "TapeLab"
@@ -43,6 +59,7 @@ target_compile_definitions(TapeLab
 
 target_link_libraries(TapeLab
     PRIVATE
+        TapeLabDSP
         juce::juce_core
         juce::juce_recommended_config_flags
         juce::juce_recommended_warning_flags
