@@ -142,3 +142,138 @@ TEST_CASE("Buffer processing respects Drive setting", "[dsp][drive]")
             ).margin(1.0e-6));
     }
 }
+
+
+TEST_CASE("Saturation output remains bounded", "[dsp][stability]")
+{
+    TapeSaturation saturation;
+
+    const std::array<float, 7> inputs{
+        -100.0f,
+        -10.0f,
+        -1.0f,
+        0.0f,
+        1.0f,
+        10.0f,
+        100.0f
+    };
+
+    for (const float driveDb : { 0.0f, 12.0f, 24.0f })
+    {
+        saturation.setDriveDb(driveDb);
+
+        for (const float input : inputs)
+        {
+            const float output = saturation.processSample(input);
+
+            REQUIRE(output >= -1.0f);
+            REQUIRE(output <= 1.0f);
+        }
+    }
+}
+
+
+TEST_CASE("Saturation produces finite outputs", "[dsp][stability]")
+{
+    TapeSaturation saturation;
+
+    const std::array<float, 7> inputs{
+        -100.0f,
+        -1.0f,
+        -0.001f,
+        0.0f,
+        0.001f,
+        1.0f,
+        100.0f
+    };
+
+    for (const float driveDb : { 0.0f, 6.0f, 12.0f, 24.0f })
+    {
+        saturation.setDriveDb(driveDb);
+
+        for (const float input : inputs)
+        {
+            const float output = saturation.processSample(input);
+
+            REQUIRE(std::isfinite(output));
+        }
+    }
+}
+
+
+TEST_CASE("Saturation preserves silence at all Drive settings",
+    "[dsp][stability]")
+{
+    TapeSaturation saturation;
+
+    for (const float driveDb : { 0.0f, 6.0f, 12.0f, 24.0f })
+    {
+        saturation.setDriveDb(driveDb);
+
+        REQUIRE(saturation.processSample(0.0f) == 0.0f);
+    }
+}
+
+
+TEST_CASE("Saturation handles empty buffers", "[dsp][buffer]")
+{
+    const TapeSaturation saturation;
+
+    saturation.processBuffer(nullptr, 0);
+
+    SUCCEED();
+}
+
+
+TEST_CASE("Buffer processing matches individual sample processing",
+    "[dsp][buffer]")
+{
+    TapeSaturation saturation;
+    saturation.setDriveDb(12.0f);
+
+    std::array<float, 6> samples{
+        -1.0f, -0.5f, -0.1f, 0.0f, 0.5f, 1.0f
+    };
+
+    const auto original = samples;
+
+    saturation.processBuffer(samples.data(), samples.size());
+
+    for (std::size_t i = 0; i < samples.size(); ++i)
+    {
+        const float expected = saturation.processSample(original[i]);
+
+        REQUIRE(samples[i] == Catch::Approx(expected).margin(1.0e-6));
+    }
+}
+
+
+TEST_CASE("Saturation processing preserves channel independence",
+    "[dsp][buffer]")
+{
+    TapeSaturation saturation;
+    saturation.setDriveDb(6.0f);
+
+    std::array<float, 4> left{
+        0.1f, 0.2f, 0.3f, 0.4f
+    };
+
+    std::array<float, 4> right{
+        -0.1f, -0.2f, -0.3f, -0.4f
+    };
+
+    const auto originalRight = right;
+
+    saturation.processBuffer(left.data(), left.size());
+
+    REQUIRE(right == originalRight);
+
+    saturation.processBuffer(right.data(), right.size());
+
+    for (std::size_t i = 0; i < right.size(); ++i)
+    {
+        REQUIRE(right[i] == Catch::Approx(
+            saturation.processSample(originalRight[i])
+        ).margin(1.0e-6));
+    }
+}
