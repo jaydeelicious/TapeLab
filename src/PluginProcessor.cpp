@@ -18,7 +18,7 @@ void TapeLabAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBlock
 {
 	juce::ignoreUnused(sampleRate, samplesPerBlock);
 
-	// TODO: initialize DSP state and filters.
+	saturation_.setDriveDb(12.0f);
 }
 
 void TapeLabAudioProcessor::releaseResources()
@@ -46,9 +46,23 @@ void TapeLabAudioProcessor::processBlock(juce::AudioBuffer<float>& buffer, juce:
 
 	juce::ignoreUnused(buffer, midiMessages);
 
-	// Audio pass-through:
-	// The input samples are already in the buffer.
-	// Leaving the buffer unchanged preserves the signal.
+	const auto numInputChannels = getTotalNumInputChannels();
+	const auto numOutputChannels = getTotalNumOutputChannels();
+	const auto numSamples = buffer.getNumSamples();
+
+	// Clear output channels without corresponding inputs.
+	for (int channel = numInputChannels; channel < numOutputChannels; ++channel)
+	{
+		buffer.clear(channel, 0, numSamples);
+	}
+
+	// Apply saturation independently to each input channel.
+	for (int channel = 0; channel < numInputChannels; ++channel)
+	{
+		auto* samples = buffer.getWritePointer(channel);
+
+		saturation_.processBuffer(samples, static_cast<std::size_t>(numSamples));
+	}
 }
 
 // ==========================

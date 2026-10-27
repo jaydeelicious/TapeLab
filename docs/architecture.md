@@ -144,6 +144,10 @@ where \(g = 10^{D_{\mathrm{dB}}/20}\) and Drive ranges from 0 to 24 dB.
 
 The algorithm produces smooth soft clipping and introduces predominantly odd-order harmonic distortion for zero-centered sinusoidal signals.
 
-The implementation will use standalone C++20 DSP code, independent of JUCE.
-
 **Limitations:** The initial model does not include oversampling, hysteresis, frequency-dependent saturation, or automatic output gain compensation. It is a tape-inspired waveshaper rather than a physical tape simulation.
+
+
+
+### Saturation Validation
+
+The initial tanh() saturation model was validated in Ableton Live 12 using sine-wave analysis. Harmonic generation was observed, with prominent odd harmonics consistent with the symmetric nonlinear transfer function. Mono and stereo processing were also verified. Oversampling remains outside the MVP scope.
