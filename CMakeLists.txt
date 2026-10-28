@@ -16,6 +16,8 @@ add_subdirectory(external/JUCE)
 add_library(TapeLabDSP STATIC
     src/dsp/TapeSaturation.cpp
     src/dsp/TapeSaturation.h
+    src/dsp/ToneFilter.cpp
+    src/dsp/ToneFilter.h
 )
 
 target_compile_features(TapeLabDSP
