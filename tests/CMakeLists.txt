@@ -3,6 +3,7 @@ add_executable(TapeLabTests
     SmokeTests.cpp
     TapeSaturationTests.cpp
     ToneFilterTests.cpp
+    WetDryMixerTests.cpp
 )
 
 target_compile_features(TapeLabTests

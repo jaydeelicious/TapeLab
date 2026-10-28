@@ -18,6 +18,8 @@ add_library(TapeLabDSP STATIC
     src/dsp/TapeSaturation.h
     src/dsp/ToneFilter.cpp
     src/dsp/ToneFilter.h
+    src/dsp/WetDryMixer.cpp
+    src/dsp/WetDryMixer.h
 )
 
 target_compile_features(TapeLabDSP
